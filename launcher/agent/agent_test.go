@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/go-tpm-tools/client"
 	"github.com/google/go-tpm-tools/internal/test"
+	"github.com/google/go-tpm-tools/launcher/verifier/fake/fakeverifier"
 	"github.com/google/go-tpm-tools/launcher/verifier/grpcclient"
-	"github.com/google/go-tpm-tools/launcher/verifier/grpcclient/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
@@ -24,7 +24,7 @@ func TestAttest(t *testing.T) {
 
 	server := grpc.NewServer()
 
-	fakeServer := service.New()
+	fakeServer := fakeverifier.NewClient()
 	servgrpc.RegisterAttestationVerifierServer(server, &fakeServer)
 
 	lis := bufconn.Listen(1024 * 1024)
