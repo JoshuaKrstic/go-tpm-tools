@@ -28,6 +28,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/go-tpm-tools/cel"
 	"github.com/google/go-tpm-tools/client"
+	"github.com/google/go-tpm-tools/internal/experiments"
 	"github.com/google/go-tpm-tools/launcher/agent"
 	"github.com/google/go-tpm-tools/launcher/spec"
 	"github.com/google/go-tpm-tools/launcher/verifier"
@@ -49,7 +50,7 @@ type ContainerRunner struct {
 }
 
 const (
-	// hostTokenPath defined the directory in the host that will store attestation tokens
+	// hostTokenPath defined the directory in the host that will store attestation tokens and experiment data.
 	hostTokenPath = "/tmp/container_launcher/"
 	// ContainerTokenMountPath defined the directory in the container stores attestation tokens
 	ContainerTokenMountPath = "/run/container_launcher/"
@@ -503,6 +504,13 @@ func (r *ContainerRunner) Run(ctx context.Context) error {
 	}
 	if err := r.fetchAndWriteToken(ctx); err != nil {
 		return fmt.Errorf("failed to fetch and write OIDC token: %v", err)
+	}
+
+	val, ok := experiments.GetBooleanExperiment(r.launchSpec.Experiments, "TestFeatureForImage")
+	if !ok {
+		r.logger.Println("failed to get TestFeatureForImage from launchspec")
+	} else {
+		r.logger.Printf("TestFeatureForImage returned %v\n", val)
 	}
 
 	var streamOpt cio.Opt

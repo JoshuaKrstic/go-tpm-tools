@@ -69,6 +69,7 @@ type LaunchSpec struct {
 	Region                     string
 	Hardened                   bool
 	LogRedirect                bool
+	Experiments                map[string]any
 }
 
 // UnmarshalJSON unmarshals an instance attributes list in JSON format from the metadata

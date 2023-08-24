@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"regexp"
 	"strings"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/containerd/containerd/defaults"
 	"github.com/containerd/containerd/namespaces"
 	"github.com/google/go-tpm-tools/client"
+	"github.com/google/go-tpm-tools/internal/experiments"
 	"github.com/google/go-tpm-tools/launcher"
 	"github.com/google/go-tpm-tools/launcher/spec"
 	"github.com/google/go-tpm/legacy/tpm2"
@@ -33,6 +35,10 @@ const (
 	// panic() returns 2
 	rebootRC = 3 // reboot
 	holdRC   = 4 // hold
+	// hostTokenPath defined the directory in the host that will store attestation tokens and experiment data.
+	hostTokenPath = "/tmp/container_launcher/"
+	// experimentDataFile defines where the experiment sync output data is expected to be.
+	experimentDataFile = "experiment_data"
 )
 
 var rcMessage = map[int]string{
@@ -99,6 +105,13 @@ func main() {
 		exitCode = failRC
 		return
 	}
+
+	e, err := experiments.ReadExperimentsFile(path.Join(hostTokenPath, experimentDataFile))
+	if err != nil {
+		logger.Println(err)
+		// do not fail if experiment retrieval fails
+	}
+	launchSpec.Experiments = e // ReadExperimentsFile returns a non-nil map
 
 	defer func() {
 		// catch panic, will also output to cloud logging if possible

@@ -2,9 +2,19 @@
 
 readonly OEM_PATH='/usr/share/oem'
 readonly CS_PATH="${OEM_PATH}/confidential_space"
+readonly EXPERIMENTS_BINARY="confidential_space_experiments"
+readonly GCS_BUCKET="gs://confidential-space-images_third-party"
 
 copy_launcher() {
   cp launcher "${CS_PATH}/cs_container_launcher"
+}
+
+copy_experiment_client() {
+  # EXPERIMENTS_BINARY is placed at  by the `gcloud` step in image/cloudbuild.yaml
+  cp $EXPERIMENTS_BINARY "${CS_PATH}/${EXPERIMENTS_BINARY}"
+  cp sync_experiments.sh "${CS_PATH}/sync_experiments.sh"
+  chmod +x "${CS_PATH}/${EXPERIMENTS_BINARY}"
+  chmod +x "${CS_PATH}/sync_experiments.sh"
 }
 
 setup_launcher_systemd_unit() {
@@ -80,6 +90,8 @@ main() {
 
   # Install container launcher entrypoint.
   configure_entrypoint "entrypoint.sh"
+  # Install experiment client.
+  copy_experiment_client
   # Install container launcher.
   copy_launcher
   setup_launcher_systemd_unit

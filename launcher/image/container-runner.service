@@ -4,6 +4,7 @@ Wants=network-online.target gcr-online.target containerd.service
 After=network-online.target gcr-online.target containerd.service
 
 [Service]
+ExecStartPre=/usr/share/oem/confidential_space/sync_experiments.sh
 ExecStart=/usr/share/oem/confidential_space/cs_container_launcher
 ExecStopPost=/usr/share/oem/confidential_space/exit_script.sh
 Restart=no
