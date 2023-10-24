@@ -5,7 +5,7 @@ source util/read_serial.sh
 # Allow VM some time to boot and write to serial console.
 sleep 120
 
-SERIAL_OUTPUT=$(read_serial $1 $2)
+SERIAL_OUTPUT=$(read_serial $1 $2 "TEE container launcher exiting")
 if echo $SERIAL_OUTPUT | grep -q 'logging redirection not allowed by image'
 then
     echo "- Log launch policy verified"

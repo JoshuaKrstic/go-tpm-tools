@@ -5,7 +5,7 @@ source util/read_serial.sh
 # Allow VM some time to boot and write to serial console.
 sleep 120
 
-SERIAL_OUTPUT=$(read_serial $1 $2)
+SERIAL_OUTPUT=$(read_serial $1 $2 "TEE container launcher exiting")
 if echo $SERIAL_OUTPUT | grep -q --fixed-strings 'env var {OUT a} is not allowed to be overridden on this image; allowed envs to be overridden: [ALLOWED_OVERRIDE]'
 then
     echo "- Env launch policy verified"

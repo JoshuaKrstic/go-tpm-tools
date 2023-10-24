@@ -9,7 +9,7 @@ sleep 120
 output=""
 if [[ "$1" == "serial" ]]; then
     echo "Reading from serial console for VM $3 in zone $4"
-    output=$(read_serial $3 $4)
+    output=$(read_serial $3 $4 "TEE container launcher exiting")
 elif [[ "$1" == "cloud_logging" ]]; then
     echo "Reading from cloud logging for VM $3"
     output=$(read_cloud_logging $3)

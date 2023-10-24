@@ -1,0 +1,88 @@
+substitutions:
+  '_IMAGE_NAME': ''
+  '_IMAGE_PROJECT': ''
+  '_CLEANUP': 'true'
+  '_VM_NAME_PREFIX': 'cs-experiments-test'
+  '_ZONE': 'us-central1-a'
+  '_WORKLOAD_IMAGE': 'gcr.io/cloudrun/hello:latest'
+steps:
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: CreateVM
+  entrypoint: 'bash'
+  env:
+  - 'BUILD_ID=$BUILD_ID'
+  args: ['create_vm.sh','-i', '${_IMAGE_NAME}',
+          '-p', '${_IMAGE_PROJECT}',
+          '-m', 'tee-image-reference=${_WORKLOAD_IMAGE},tee-container-log-redirect=true',
+          '-n', '${_VM_NAME_PREFIX}-${BUILD_ID}',
+          '-z', '${_ZONE}',
+        ]
+# Build experiments binary
+- name: golang:1.20
+  entrypoint: /bin/bash
+  args:
+    - -c
+    - |
+      cd binaries/return_bad_status
+      CGO_ENABLED=0 go build -o .  
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: Wait for Launch Spec
+  entrypoint: 'bash'
+  args: ['util/read_serial.sh', '${_VM_NAME_PREFIX}-${BUILD_ID}', '${_ZONE}', "Launch Spec"]
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: Copy test binary
+  entrypoint: 'gcloud'
+  args: ['compute',
+          'scp',
+          '--zone=${_ZONE}',
+          './binaries/return_bad_status',
+          'cloudbuild@${_VM_NAME_PREFIX}-${BUILD_ID}:/usr/share/oem/confidential_space/confidential_space_experiments',
+        ]
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: SSH into test machine
+  entrypoint: 'gcloud'
+  args: ['compute',
+          'ssh',
+          'cloudbuild@${_VM_NAME_PREFIX}-${BUILD_ID}',
+        ]
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: Chmod test binary to be executable
+  entrypoint: '/bin/bash'
+  args: ['chmod',
+          '/usr/share/oem/confidential_space/confidential_space_experiments',
+          '+x',
+        ]
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: Run test binary
+  entrypoint: '/bin/bash'
+  args: [
+    '/usr/share/oem/confidential_space/confidential_space_experiments',
+    ]
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: Run launcher again
+  entrypoint: '/bin/bash'
+  args: ['/usr/share/oem/confidential_space/cs_container_launcher',
+          '>',
+          'output.txt',
+  ]
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: TestExperimentTrue
+  entrypoint: 'bash'
+  args: ['scripts/test_experiment_value_from_file.sh', "true", 'output.txt']
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: CleanUp
+  entrypoint: 'bash'
+  env:
+  - 'CLEANUP=$_CLEANUP'
+  args: ['cleanup.sh', '${_VM_NAME_PREFIX}-${BUILD_ID}', '${_ZONE}']
+# Must come after cleanup.
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: CheckFailure
+  entrypoint: 'bash'
+  env:
+  - 'BUILD_ID=$BUILD_ID'
+  args: ['check_failure.sh']
+
+options:
+  pool:
+    name: 'projects/confidential-space-images-dev/locations/us-west1/workerPools/cs-image-build-vpc'

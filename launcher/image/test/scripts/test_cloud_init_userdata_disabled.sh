@@ -5,7 +5,7 @@ source util/read_serial.sh
 echo 'Running cloud-init userdata test'
 
 echo 'Reading from serial port'
-SERIAL_OUTPUT=$(read_serial $1 $2)
+SERIAL_OUTPUT=$(read_serial $1 $2 "TEE container launcher exiting")
 
 # check whether ./data/cloud-init-config.yaml is executed, will print "user-data in metadata executed"
 # in serial console if it was executed

@@ -5,7 +5,7 @@ source util/read_serial.sh
 echo 'Running startup script test'
 
 echo 'Reading from serial port:'
-SERIAL_OUTPUT=$(read_serial $1 $2)
+SERIAL_OUTPUT=$(read_serial $1 $2 "TEE container launcher exiting")
 echo $SERIAL_OUTPUT
 
 # Without the or logic, this step will fail and cleanup does not run.

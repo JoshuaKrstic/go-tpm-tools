@@ -11,6 +11,7 @@ read_serial() {
   timeout="10 minute"
   endtime=$(date -ud "$timeout" +%s)
 
+  echo "Reading serial console..."
   while [ -s /workspace/next_start.txt ]; do
     if [[ $(date -u +%s) -ge $endtime ]]; then
       echo "timed out reading serial console" 
@@ -27,9 +28,12 @@ read_serial() {
     serial_out="$serial_out $tmp"
 
     # break the loop if the workload is finished
-    if echo ${serial_out} | grep -qi "TEE container launcher exiting"; then
+    if echo ${serial_out} | grep -qi "$3"; then
+      echo "Found $3 in the serial console. No more data will be read."
       break
     fi
+
+    echo "Did not find $3 in serial console. Reading again"
 
     last=$next
   done

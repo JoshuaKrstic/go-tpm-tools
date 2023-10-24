@@ -4,7 +4,7 @@ source util/read_serial.sh
 
 # This test requires the workload to run and printing
 # corresponding messages to the serial console.
-SERIAL_OUTPUT=$(read_serial $1 $2) 
+SERIAL_OUTPUT=$(read_serial $1 $2 "TEE container launcher exiting") 
 print_serial=false
 
 if echo $SERIAL_OUTPUT | grep -q 'Workload running'
