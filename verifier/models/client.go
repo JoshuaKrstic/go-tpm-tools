@@ -1,12 +1,11 @@
 // Package verifier contains clients for various attestation verifiers.
 // It is meant for launcher use and testing; the API is not stable.
-package verifier
+package models
 
 import (
 	"context"
 
 	attestpb "github.com/google/go-tpm-tools/proto/attest"
-	"github.com/google/go-tpm-tools/verifier/models"
 	"google.golang.org/genproto/googleapis/rpc/status"
 )
 
@@ -44,7 +43,7 @@ type VerifyAttestationRequest struct {
 	// Attestation is for TPM attestation
 	Attestation              *attestpb.Attestation
 	ContainerImageSignatures []*ContainerSignature
-	TokenOptions             *models.TokenOptions
+	TokenOptions             *TokenOptions
 	// TDCCELAttestation is for TDX CCEL RTMR attestation
 	TDCCELAttestation *TDCCELAttestation
 }
@@ -64,4 +63,10 @@ type TDCCELAttestation struct {
 type VerifyAttestationResponse struct {
 	ClaimsToken []byte
 	PartialErrs []*status.Status
+}
+
+// ITAConfig represents the configuration needed to integrate with ITA as a verifier.
+type ITAConfig struct {
+	ITARegion string
+	ITAKey    string
 }

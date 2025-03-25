@@ -37,6 +37,7 @@ import (
 	"github.com/google/go-tpm-tools/launcher/teeserver"
 	"github.com/google/go-tpm-tools/verifier"
 	"github.com/google/go-tpm-tools/verifier/ita"
+	"github.com/google/go-tpm-tools/verifier/models"
 	"github.com/google/go-tpm-tools/verifier/util"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
@@ -240,7 +241,7 @@ func NewRunner(ctx context.Context, cdClient *containerd.Client, token oauth2.To
 	asAddr := launchSpec.AttestationServiceAddr
 
 	var verifierClient verifier.Client
-	if launchSpec.ITARegion == "" {
+	if launchSpec.ITAConfig.ITARegion == "" {
 		gcaClient, err := util.NewRESTClient(ctx, asAddr, launchSpec.ProjectID, launchSpec.Region)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create REST verifier client: %v", err)
@@ -346,6 +347,27 @@ func (r *ContainerRunner) measureCELEvents(ctx context.Context) error {
 		EventContent: nil, // Success
 	}
 	return r.attestAgent.MeasureEvent(separator)
+}
+
+func setUpAttestClients(ctx context.Context, launchSpec spec.LaunchSpec) (models.AttestClients, error) {
+	attestClients := models.AttestClients{}
+	gcaClient, err := util.NewRESTClient(ctx, launchSpec.AttestationServiceAddr, launchSpec.ProjectID, launchSpec.Region)
+	if err != nil {
+		return attestClients, fmt.Errorf("failed to create REST GCA client: %v", err)
+	}
+
+	attestClients.GCA = gcaClient
+
+	if launchSpec.ITAConfig != nil {
+		itaClient, err := ita.NewClient(launchSpec.ITAConfig)
+		if err != nil {
+			return attestClients, fmt.Errorf("failed to create ITA client: %v", err)
+		}
+
+		attestClients.ITA = itaClient
+	}
+
+	return attestClients, nil
 }
 
 // measureContainerClaims will measure various container claims into the COS
@@ -582,7 +604,7 @@ func (r *ContainerRunner) Run(ctx context.Context) error {
 	}
 
 	// Only refresh token if agent has a default GCA client (not ITA use case).
-	if r.launchSpec.ITARegion == "" {
+	if r.launchSpec.ITAConfig.ITARegion == "" {
 		if err := r.fetchAndWriteToken(ctx); err != nil {
 			return fmt.Errorf("failed to fetch and write OIDC token: %v", err)
 		}
@@ -592,8 +614,8 @@ func (r *ContainerRunner) Run(ctx context.Context) error {
 	r.logger.Info("EnableOnDemandAttestation is enabled: initializing TEE server.")
 
 	attestClients := &teeserver.AttestClients{}
-	if r.launchSpec.ITARegion != "" {
-		itaClient, err := ita.NewClient(r.launchSpec.ITARegion, r.launchSpec.ITAKey)
+	if r.launchSpec.ITAConfig.ITARegion != "" {
+		itaClient, err := ita.NewClient(r.launchSpec.ITAConfig)
 		if err != nil {
 			return fmt.Errorf("failed to create ITA client: %v", err)
 		}
