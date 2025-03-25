@@ -37,7 +37,6 @@ import (
 	"github.com/google/go-tpm-tools/launcher/teeserver"
 	"github.com/google/go-tpm-tools/verifier"
 	"github.com/google/go-tpm-tools/verifier/ita"
-	"github.com/google/go-tpm-tools/verifier/models"
 	"github.com/google/go-tpm-tools/verifier/util"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
@@ -349,26 +348,26 @@ func (r *ContainerRunner) measureCELEvents(ctx context.Context) error {
 	return r.attestAgent.MeasureEvent(separator)
 }
 
-func setUpAttestClients(ctx context.Context, launchSpec spec.LaunchSpec) (models.AttestClients, error) {
-	attestClients := models.AttestClients{}
-	gcaClient, err := util.NewRESTClient(ctx, launchSpec.AttestationServiceAddr, launchSpec.ProjectID, launchSpec.Region)
-	if err != nil {
-		return attestClients, fmt.Errorf("failed to create REST GCA client: %v", err)
-	}
+// func setUpAttestClients(ctx context.Context, launchSpec spec.LaunchSpec) (verifier.AttestClients, error) {
+// 	attestClients := verifier.AttestClients{}
+// 	gcaClient, err := util.NewRESTClient(ctx, launchSpec.AttestationServiceAddr, launchSpec.ProjectID, launchSpec.Region)
+// 	if err != nil {
+// 		return attestClients, fmt.Errorf("failed to create REST GCA client: %v", err)
+// 	}
 
-	attestClients.GCA = gcaClient
+// 	attestClients.GCA = gcaClient
 
-	if launchSpec.ITAConfig != nil {
-		itaClient, err := ita.NewClient(launchSpec.ITAConfig)
-		if err != nil {
-			return attestClients, fmt.Errorf("failed to create ITA client: %v", err)
-		}
+// 	if launchSpec.ITAConfig != nil {
+// 		itaClient, err := ita.NewClient(launchSpec.ITAConfig)
+// 		if err != nil {
+// 			return attestClients, fmt.Errorf("failed to create ITA client: %v", err)
+// 		}
 
-		attestClients.ITA = itaClient
-	}
+// 		attestClients.ITA = itaClient
+// 	}
 
-	return attestClients, nil
-}
+// 	return attestClients, nil
+// }
 
 // measureContainerClaims will measure various container claims into the COS
 // eventlog in the AttestationAgent.

@@ -12,7 +12,6 @@ import (
 	"net/http"
 
 	"github.com/google/go-tpm-tools/verifier"
-	"github.com/google/go-tpm-tools/verifier/models"
 )
 
 const (
@@ -57,7 +56,7 @@ func urlFromRegion(region string) (string, error) {
 	// return url, nil
 }
 
-func NewClient(itaConfig *models.ITAConfig) (verifier.Client, error) { //region string, key string) (verifier.Client, error) {
+func NewClient(itaConfig *verifier.ITAConfig) (verifier.Client, error) { //region string, key string) (verifier.Client, error) {
 	url, err := urlFromRegion(itaConfig.ITARegion)
 	if err != nil {
 		return nil, err

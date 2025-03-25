@@ -21,7 +21,7 @@ import (
 	"github.com/google/go-tpm-tools/launcher/internal/launchermount"
 	"github.com/google/go-tpm-tools/launcher/internal/logging"
 	"github.com/google/go-tpm-tools/launcher/launcherfile"
-	"github.com/google/go-tpm-tools/verifier/models"
+	"github.com/google/go-tpm-tools/verifier"
 	"github.com/google/go-tpm-tools/verifier/util"
 )
 
@@ -125,7 +125,7 @@ type LaunchSpec struct {
 	MonitoringEnabled          MonitoringType
 	LogRedirect                LogRedirectLocation
 	Mounts                     []launchermount.Mount
-	ITAConfig                  *models.ITAConfig
+	ITAConfig                  *verifier.ITAConfig
 	// DevShmSize is specified in kiB.
 	DevShmSize        int64
 	AddedCapabilities []string
@@ -255,11 +255,11 @@ func (s *LaunchSpec) UnmarshalJSON(b []byte) error {
 		itaKeyVal, itaKeyOK := unmarshaledMap[itaKey]
 
 		// If key and region are both not in the map, do not set up ITA config.
-		if itaRegionOK != itaKeyOK || (itaRegionOK && itaRegionVal == "" && itaKeyVal == "") {
+		if itaRegionOK != itaKeyOK {
 			return fmt.Errorf("ITA fields %s and %s must both be provided and non-empty", itaRegion, itaKey)
 		}
 
-		s.ITAConfig = &models.ITAConfig{
+		s.ITAConfig = &verifier.ITAConfig{
 			ITARegion: itaRegionVal,
 			ITAKey:    itaKeyVal,
 		}

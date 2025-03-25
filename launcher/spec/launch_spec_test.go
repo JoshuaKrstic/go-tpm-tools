@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-tpm-tools/launcher/internal/experiments"
 	"github.com/google/go-tpm-tools/launcher/internal/launchermount"
-	"github.com/google/go-tpm-tools/verifier/models"
+	"github.com/google/go-tpm-tools/verifier"
 )
 
 func TestLaunchSpecUnmarshalJSONHappyCases(t *testing.T) {
@@ -65,7 +65,7 @@ func TestLaunchSpecUnmarshalJSONHappyCases(t *testing.T) {
 		DevShmSize:                 234234,
 		Mounts: []launchermount.Mount{launchermount.TmpfsMount{Destination: "/tmpmount", Size: 0},
 			launchermount.TmpfsMount{Destination: "/sized", Size: 222}},
-		ITAConfig: &models.ITAConfig{
+		ITAConfig: &verifier.ITAConfig{
 			ITARegion: "US",
 			ITAKey:    "test-api-key",
 		},
